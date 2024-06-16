@@ -1,0 +1,51 @@
+Location : application.properties
+
+management.endpoints.web.exposure.include=mappings
+explanation - this helps us to see all the possible url's that we have in our code  OR
+              this helps us to expose all the url mappings that we have in our code
+
+Internal API
+http://localhost:8080/actuator/mappings
+explanation - This is an Internal API which is given by SpringBoot Actuator
+
+
+
+
+
+
+-----------------calling 3rd party api class--------------------------
+
+
+
+
+
+to convert any entity to dto we use ProductEntityDTOMapper class
+
+@Value("${fakestore.api.base.url}")  // this annotation will, fetch the value from app properties and inject that value to this variable
+
+
+Serialisation -> process for converting an object to a json string
+DeSerialisation -> process of converting a json string to an object
+
+
+@Component  // because this is not a controller, service and repo class that's why spring doesnot create an object for this class if we want object of this class then we put @Coponent annotation
+public class FakeStoreClient {
+    @Autowired
+    private RestTemplateBuilder restTemplateBuilder;
+    @Value("${fakestore.api.base.url}")  // this annotation will, fetch the value from app properties and inject that value to this variable
+    private String fakeStoreAPIBaseUrl;
+    @Value("${fakestore.api.product.path}")
+    private String fakeStoreAPIProductPath;
+    @Value("${fakestore.api.category.path}")
+    private String fakeStoreAPICategoryPath;
+
+
+    public List<FakeStoreProductResponseDTO> getAllProducts() { // should this method get List<Product> from fakestore?  Noooo because if fakestore changes his response type this is tight coupled so we use fakestoreResponsedto
+        String fakeStoreGetAllProductURL = fakeStoreAPIBaseUrl.concat(fakeStoreAPIProductPath);
+        RestTemplate restTemplate = restTemplateBuilder.build();
+        ResponseEntity<FakeStoreProductResponseDTO[]> productResponseList =
+                restTemplate.getForEntity(fakeStoreGetAllProductURL, FakeStoreProductResponseDTO[].class);
+        return List.of(productResponseList.getBody());
+    }
+}
+
